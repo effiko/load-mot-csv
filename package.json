@@ -1,24 +1,17 @@
 {
-  "name": "load-mot-csv",
+  "name": "tmp",
   "version": "1.0.0",
-  "description": "a utility to parse the file from MOT and load it into a redis json DB",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node load-mot-csv.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/effiko/load-mot-csv.git"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/effiko/load-mot-csv/issues"
-  },
-  "homepage": "https://github.com/effiko/load-mot-csv#readme",
   "dependencies": {
-    "const": "^1.0.0",
-    "csvjson": "^5.1.0",
+    "node-libcurl": "^2.1.1",
+    "node-wget": "^0.4.3",
+    "wget-improved": "^3.2.0",
     "redis": "^3.0.2",
     "redis-rejson": "^1.0.0"
   }

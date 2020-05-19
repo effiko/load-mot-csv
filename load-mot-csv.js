@@ -1,53 +1,53 @@
-// convert the csv file received fo MOT to a json file
-
-const options = {'delimiter': '|', };
-var csvjson = require('csvjson');
-const csvFilePath = './bikes.txt';
+const redis = require('redis') ;
+const rejson = require('redis-rejson');
+const wget = require('wget-improved');
 const fs = require('fs');
+const src = 'https://data.gov.il/api/action/datastore_search?resource_id=bf9df4e2-d90d-4c0a-a400-19e15af8e95f&limit=200000';
+const output = '/tmp/bikes1';
 
-const
-  redis = require('redis'),
-  rejson = require('redis-rejson');
+rejson(redis); // important - this must come BEFORE creating the client 
+let client = redis.createClient(6379);
 
-var data = fs.readFileSync(csvFilePath, { encoding : 'utf8'});
-/*
-{
-    delimiter : <String> optional default is ","
-    quote     : <String|Boolean> default is null
-}
 
-var options = {
-  delimiter : '|', // optional
-  quote     : '"' // optional
+var sendDate = (new Date()).getTime();
+const options = {
+    // see options below
 };
-*/
-// for multiple delimiter you can use regex pattern like this /[,|;]+/
- 
-/* 
-  for importing headers from different source you can use headers property in options 
-  var options = {
-    headers : "sr,name,age,gender"
-  };
-*/
- 
-json = csvjson.toObject(data, options);
-console.log (json.length);
+let download = wget.download(src, output, options);
+download.on('error', function(err) {
+    console.log(err);
+});
+download.on('start', function(fileSize) {
+    console.log(fileSize);
+});
+download.on('end', function(res) {
+    var endDate = (new Date()).getTime();
+    console.log('Request took ' + (endDate -  sendDate) + ' mSec');
+    sendDate = (new Date()).getTime();
+    data = fs.readFileSync(output);
+    json = JSON.parse(data);
+    console.log(json);
+    endDate = (new Date()).getTime();
+    console.log('Parsing took ' + (endDate -  sendDate) + ' mSec');
+    startDate = (new Date()).getTime();
 
-rejson(redis); /* important - this must come BEFORE creating the client */
-let client = redis.createClient(4567);
-var lineNumber = 0 ;
-json.forEach((jsonRow)=>{
-  if ((lineNumber++ % 1000) === 0) {
-    console.log('Saved ' + lineNumber);
-  }
-  row =  JSON.stringify(jsonRow);
-  client.json_set(jsonRow.mispar_rechev, '.', JSON.stringify(jsonRow), function (err) {
-    if (err) {console.log('Error = '+err)}
-  })} 
-)
-console.log('Total saved ' + lineNumber + ' records ');
-client.json_get('03455432', '.', function (err, value) {
-  if (err) {console.log('Error = '+err)}
-  console.log('value of 03455432:', value); 
-  client.quit();
-})
+
+    var lineNumber = 0 ;
+    json.result.records.forEach((jsonRow)=>{
+      if ((lineNumber++ % 1000) === 0) {
+        console.log('Saved ' + lineNumber);
+      }
+      row =  JSON.stringify(jsonRow);
+      client.json_set(jsonRow.mispar_rechev, '.', JSON.stringify(jsonRow), function (err) {
+        if (err) {console.log('Error = '+err)}
+      })} 
+    )
+    console.log('Total saved ' + lineNumber + ' records ');
+    endDate = (new Date()).getTime();
+    console.log('Loading to Redis DB took ' + (endDate -  startDate) + ' mSec');
+  
+});
+download.on('progress', function(progress) {
+    typeof progress === 'number'
+    // code to show progress bar
+});
